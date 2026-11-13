@@ -9,6 +9,7 @@ Research repository for a study of whether fixed factor loadings describe the U.
 | Item | Content |
 | --- | --- |
 | [Paper PDF](paper/working_draft.pdf) · [LaTeX](paper/working_draft.tex) | Full research argument, methods, limitations, and figures; explicitly marked as an AI-written draft. |
+| [Week 9 handover slides](slides/Week_9_handover.pptx) | The original 24-slide deck from the Week 9 handover folder. Its speaker-note scripts were removed from the public copy; slide content is unchanged. |
 | [Key findings](results/key_findings.md) · [frozen result tables](results/final_tables.md) | Results from the completed week-nine simulation runs. |
 | [Figure guide](figures/README.md) | Six figures, their data sources, and how to read them. |
 | [Data](data/README.md) · [calibration](calibration/) | Public H.15 monthly yields, a labeled synthetic panel, and fitted parameters for the JKV-based simulation. |
