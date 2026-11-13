@@ -3,7 +3,10 @@ __pycache__/
 .venv/
 .pytest_cache/
 .DS_Store
-data/
+data/*
+!data/README.md
+!data/treasury_cmt_h15_monthly_1962_2026.csv
+!data/synthetic_jkv_example.csv
 results/cells/
 paper/*.aux
 paper/*.log

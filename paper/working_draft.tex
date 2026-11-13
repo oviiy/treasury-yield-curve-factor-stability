@@ -15,11 +15,15 @@
 
 \title{Are Factor Models with Time-Invariant Loadings Adequate for Yield Curves?}
 \author{Junhui Qian \and Xihao Wang}
-\date{Working draft, November 2026}
+\date{AI-written working draft, November 2026}
 
 \begin{document}
 
 \maketitle
+
+\begin{center}
+\fcolorbox{red!60!black}{red!5}{\parbox{0.86\linewidth}{\centering\small\textbf{AI-WRITTEN RESEARCH DRAFT --- NOT PEER REVIEWED.} The prose and presentation were prepared with AI assistance. Numerical results and interpretations are provisional and require author and adviser verification before circulation as research findings.}}
+\end{center}
 
 \begin{abstract}
 Almost every factor model of the yield curve---Nelson--Siegel, Svensson, their dynamic and arbitrage-free versions, and principal-component models---maps a few factors to maturities through a loading matrix that does not change over time. We ask whether this restriction is supported by the data. Using the nonparametric test of \citet{SuWang2017}, which compares a global principal-component fit with a kernel-local one, we test constant loadings in two monthly U.S.\ Treasury panels: the CRSP unsmoothed Fama--Bliss zero-coupon yields of \citet{JKV2014} (1970--2009, 17 maturities) and the official Treasury constant-maturity par curve (1981--2026, 8 maturities). The Treasury panel rejects constant loadings with three, four and five factors; the Fama--Bliss panel rejects with three factors, and with four in every sample starting between 1977 and 1986. Monte Carlo experiments at our sample sizes, including fake curves calibrated to both panels, show that with serially independent errors the test's size is close to or below nominal at the 1\%, 5\% and 10\% levels and its power against a change in the factor structure is close to one. The empirical residuals, however, are serially correlated (lag-one autocorrelation around 0.6), and in simulations SW's bootstrap rejects constant loadings in every replication once the errors have an autocorrelation of 0.3 or more; the empirical rejections therefore cannot yet be read as evidence of changing loadings. As a secondary extension beyond SW's procedure, we also ask how well a change can be dated: a sequential scan dates a planted change about 20 months late, while testing once and dating by least squares is more accurate.
@@ -185,6 +189,10 @@ Errors violate the null model (serial correlation, variance shifts) & No: false 
 The procedures therefore answer nested questions. The full-sample test decides whether the constant-loading model fails. A dating procedure is only meaningful after such a failure, and only if the failure is of the first kind. Simulations decide how much weight each answer can bear: the full-sample test's size and power, the dating procedure's false-alarm rate as a whole (a procedure that tests many windows has a family-wise error larger than the level of each test), and its dating error.
 
 \section{Data}\label{sec.data}
+\begin{figure}[htbp]
+\centering\includegraphics[width=\linewidth]{../figures/01_treasury_yields.png}
+\caption{The public H.15 Treasury CMT panel. Annual average curves appear on the left and short and long maturities over time on the right. These par yields differ from the CRSP zero-coupon panel used for JKV calibration.}\label{fig.yields}
+\end{figure}
 
 We use two monthly panels and keep them separate throughout, because they differ in yield concept, maturity grid and construction.
 
@@ -291,6 +299,15 @@ Table~\ref{tab.fakesize} shows no sign of over-rejection at any level in either 
 The calibrated noise is independent over time, which is what both the bootstrap and SW's theory assume. The residuals of the constant-loading fits to the real panels have lag-one autocorrelations of 0.5--0.7, so these experiments establish that the test is correctly sized under its own assumptions, not that the empirical rejections are robust to serial correlation in the errors. Section~\ref{sec.ar} relaxes this assumption.
 
 \subsection{A benchmark for size, power and dating}\label{sec.bench}
+\begin{figure}[htbp]
+\centering\includegraphics[width=\linewidth]{../figures/02_simulation_design.png}
+\caption{Calibrated loadings and the planted fourth-factor signal. The original three factors continue throughout; only the fourth switches on at the known month. This alternative differs from the fixed-rank changing-loading designs in \citet{SuWang2017}.}\label{fig.design}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering\includegraphics[width=\linewidth]{../figures/03_fullsample_size_power.png}
+\caption{Full-sample rejection frequencies from 500 final-seed panels per cell. Size uses no-break panels; power uses a fourth factor planted at three positions. Neither outcome measures dating accuracy.}\label{fig.sizepower}
+\end{figure}
 
 The experiments above use one break position and change the factor variances and the noise together with the factor structure. For a cleaner benchmark (our week-9 design) we fix the following and use it for every procedure in this section and in Section~\ref{sec.scan}. Fake panels are calibrated to the Fama--Bliss panel ($T=480$, $N=17$) and tested at $d=3$. The three Nelson--Siegel factors follow one continuous AR(1) path through the whole sample, and the noise is i.i.d.\ over time with the standard deviation of the three-factor residual of each maturity. Under the null (\emph{null3}) the panel has three factors throughout. Under the alternative (\emph{break}) a fourth (Svensson) factor, multiplied by a strength $s$, enters at $\tau\in\{160,240,320\}$, one third, one half and two thirds of the sample; nothing else changes at $\tau$. With $s=1$ the fourth factor has its fitted size; its loading lies 95\% in the span of the first three loadings, so it is a weak factor, and we also report $s=0.5$. \emph{Size} is the share of null panels on which a procedure reports any break (or rejects); \emph{power} is the share of break panels with a break reported at or after $\tau-12$; the dating error is the first reported break minus $\tau$. Seeds are split into a tuning block, used to choose among procedures, and a final block used once. The test uses SW's $B=200$.
 
@@ -336,7 +353,16 @@ $c$ & 1\% & 5\% & 10\% & 1\% & 5\% & 10\%\\
 \end{threeparttable}
 \end{table}
 
+\begin{figure}[htbp]
+\centering\includegraphics[width=\linewidth]{../figures/04_bandwidth.png}
+\caption{Bandwidth sensitivity of full-sample size and power. The dashed vertical line is the paper's rule ($c=1$); horizontal dotted lines are nominal size levels. Results use 300 tuning panels and a middle-sample break.}\label{fig.bandwidth}
+\end{figure}
+
 \subsection{Serially correlated errors}\label{sec.ar}
+\begin{figure}[htbp]
+\centering\includegraphics[width=\linewidth]{../figures/05_serial_dependence.png}
+\caption{Serial-correlation stress test based on Table~\ref{tab.ar}. Size uses no-break panels; power uses a half-strength fourth factor. The global- and local-residual AR(1) bootstraps are experimental variants, not adopted corrections.}\label{fig.ar}
+\end{figure}
 
 Removing three principal components from the Fama--Bliss panel leaves residuals with a median lag-one autocorrelation of 0.63 (0.36--0.79 across maturities). We therefore replace the i.i.d.\ noise of the benchmark by AR(1) noise with coefficient $\rho$, keeping its marginal variance. Table~\ref{tab.ar} reports the full-sample test at 5\% (the gate of the ``test, then split'' procedure of Section~\ref{sec.scan}, so its size is the test's size). With SW's bootstrap the size is 3\% at $\rho=0$ and 100\% at $\rho\ge 0.3$. Persistent noise inflates the gap between the local and the global fit by roughly $(1+\rho)/(1-\rho)$; at $\rho=0.5$ the statistic rises from 0.5--1 to 8--9, against a 5\% critical value of about 2. The sequential scan of Section~\ref{sec.scan} is affected in the same way: at $\rho=0.5$ it reports a break in every null panel, 3.7 on average.
 
@@ -588,6 +614,10 @@ $2\times$ per-window & 7.0 & 24.5 & 45 & 95.5 & 3\\
 \end{table}
 
 \subsection{Test, then split}\label{sec.split}
+\begin{figure}[htbp]
+\centering\includegraphics[width=\linewidth]{../figures/06_dating.png}
+\caption{Detection and dating are distinct tasks. The left panel shows dates within 24 months of a planted break; the right compares full-sample rejection with gated-split detection. Scan and gated-split figures come from different Monte Carlo cells and are not paired outcomes.}\label{fig.dating}
+\end{figure}
 
 As \emph{our addition}, the second procedure separates detection from dating. (a) Run SW's full-sample test at $d$ and level $\alpha$. (b) If it rejects, for every candidate month $k$ (excluding 10\% of the sample at each end, on a six-month grid refined monthly) fit $d$ principal components separately to months before and after $k$, and take as the break the $k$ that minimizes the sum of the two residual sums of squares. Step (b) is the least-squares break estimator used for regressions \citep{Bai1997} and, in a related form, for factor models \citep{BKW2017}. Because the decision is the test's, the procedure's size is the test's size; the date requires no further test.
 
