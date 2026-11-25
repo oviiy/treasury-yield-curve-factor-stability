@@ -9,6 +9,7 @@ import re
 from pathlib import Path
 
 import matplotlib
+import matplotlib.ticker
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -157,6 +158,149 @@ def figure_dating():
     save(fig, "06_dating.png", "Sources: frozen Tables B and G; different simulation counts, so compare patterns, not paired outcomes.")
 
 
+# ---------------------------------------------------------------- serial-correlation workstream (figures 07-11)
+SERIAL = ROOT / "results/serial"
+
+
+def serial_csv(name):
+    return pd.read_csv(SERIAL / name)
+
+
+def figure_persistence():
+    grid = serial_csv("bandwidth_real_grid.csv")
+    test = serial_csv("bandwidth_original_test_summary.csv")
+    fig, (ax, bx) = plt.subplots(1, 2, figsize=(11.5, 4))
+    for panel, label, color in [("JKV_full_17", "JKV, 1970–2009", NAVY), ("CMT_full_8", "Treasury CMT, 1981–2026", CORAL)]:
+        g = grid[(grid.panel == panel) & (grid["rank"] == 3) & (grid.scale > 0)].sort_values("scale")
+        fixed = grid[(grid.panel == panel) & (grid["rank"] == 3) & (grid.scale == 0)].median_rho1.iloc[0]
+        ax.plot(g.scale, g.median_rho1, marker="o", lw=2, color=color, label=f"{label}: local fit")
+        ax.axhline(fixed, color=color, ls=":", lw=1.2, label=f"{label}: fixed loadings")
+    ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax.set(xscale="log", xticks=[.25, .5, 1, 2, 3], xticklabels=["0.25", "0.5", "1", "2", "3"], ylim=(0, .8),
+           xlabel="Bandwidth multiplier c (h = c × rule)", ylabel="Median lag-1 autocorrelation",
+           title="Real data: narrower h whitens residuals only partly")
+    ax.legend(fontsize=8)
+    for ds, color in [("JKV17", NAVY), ("Treasury8", CORAL)]:
+        for sc, ls, lab in [("null3_ar03", "-", "AR(0.3) noise"), ("null3_iid", "--", "independent noise")]:
+            t = test[(test.dataset == ds) & (test.scenario == sc)].sort_values("scale")
+            bx.plot(t.scale, 100 * t.reject_rate, marker="o", lw=2, ls=ls, color=color, label=f"{ds}, {lab}")
+    bx.axhline(5, color=GREY, ls="--", lw=1)
+    bx.set(xscale="log", ylim=(0, 105), xlabel="Bandwidth multiplier c",
+           ylabel="Rejection rate with no change (%)", title="Original test: narrower h raises false rejections")
+    bx.set_xticks([.5, 1, 2], ["0.5", "1", "2"]); bx.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    bx.legend(fontsize=8)
+    save(fig, "07_bandwidth_persistence.png", "Sources: results/serial/bandwidth_real_grid.csv (rank 3) and bandwidth_original_test_summary.csv (200 panels, T = 240, 5% level).")
+
+
+def figure_suwang_dgp():
+    d = serial_csv("suwang_dgp_replication.csv")
+    cells = [("DGP1_iid", "IID errors"), ("DGP1_ar03", "AR(0.3) errors"), ("DGP1_ar06", "AR(0.6) errors")]
+    methods = [("J_paper", "Su–Wang J, paper bootstrap", NAVY), ("SM1", "Authors' MATLAB SM1", GREY),
+               ("GLS_J_wild", "AR(1)-filtered GLS-J", TEAL)]
+    fig, ax = plt.subplots(figsize=(8.5, 3.8))
+    x = np.arange(len(cells))
+    for j, (m, lab, color) in enumerate(methods):
+        v = [float(d[(d.cell == c) & (d.method == m)].reject_pct.iloc[0]) for c, _ in cells]
+        ax.bar(x + (j - 1) * .26, v, .26, color=color, label=lab)
+        for xi, vi in zip(x + (j - 1) * .26, v):
+            ax.text(xi, vi + 1.5, f"{vi:.1f}" if vi < 10 else f"{vi:.0f}", ha="center", fontsize=8, color=color)
+    ax.axhline(5, color=CORAL, ls="--", lw=1)
+    ax.set(xticks=x, xticklabels=[l for _, l in cells], ylim=(0, 112), ylabel="Rejection rate with constant loadings (%)",
+           title="Su–Wang's own DGP 1 (N = T = 100, R = 2): size fails once errors persist")
+    ax.legend(fontsize=8, loc="upper left")
+    save(fig, "08_suwang_dgp_serial.png", "Source: results/serial/suwang_dgp_replication.csv; 200 panels per cell, B = 199, 5% level.", bottom=.06)
+
+
+NULL_LABELS = {
+    "null_iid": "IID", "null_ar03": "AR(0.3)", "null_ar06": "AR(0.6)", "null_ar09": "AR(0.9)",
+    "null_hetero": "AR 0.2–0.7 by maturity", "null_ar2": "AR(2)", "null_arma11": "ARMA(1,1)",
+    "null_meas": "Persistent + measurement", "null_cross_ar06": "Cross-maturity corr.",
+    "null_crosschg_ar06": "Cross corr. switches on", "null_vol15_ar03": "Volatility ×1.5, all maturities",
+    "null_r4_iid": "Rank 4, IID (r = 4)", "null_r4_ar06": "Rank 4, AR(0.6) (r = 4)", "null_r4_hetero": "Rank 4, hetero AR (r = 4)",
+    "null_volslope_ar03": "Volatility ×1→×2 by maturity, AR(0.3)", "null_volslope_ar06": "Volatility ×1→×2 by maturity, AR(0.6)"}
+
+
+def new_method_cells():
+    s = serial_csv("simulation_all_runs_summary.csv")
+    s = s[s.method == "gls_aic_h2"].drop_duplicates(["dataset", "scenario"], keep="last")
+    return {(r.dataset, r.scenario): r.reject_pct for r in s.itertuples()}
+
+
+def figure_new_size():
+    cell = new_method_cells()
+    keys = list(NULL_LABELS)
+    fig, ax = plt.subplots(figsize=(9.5, 5.6))
+    y = np.arange(len(keys))[::-1]
+    ax.axvspan(2.3, 7.7, color="#e8eef5", lw=0, label="Monte Carlo 95% band around 5% (250 panels)")
+    ax.axvline(5, color=GREY, ls="--", lw=1)
+    for ds, color, off in [("JKV17", NAVY, .14), ("Treasury8", CORAL, -.14)]:
+        ax.scatter([cell[(ds, k)] for k in keys], y + off, color=color, s=34, zorder=3, label=ds)
+    ax.set(yticks=y, yticklabels=[NULL_LABELS[k] for k in keys], xlim=(0, 17), xlabel="Rejection rate at 5% with constant loadings (%)",
+           title="Sieve-AR GLS-J size across error designs")
+    ax.legend(fontsize=8, loc="upper right")
+    save(fig, "09_sieve_gls_size.png", "Source: results/serial/simulation_all_runs_summary.csv (method gls_aic_h2), 250 panels, T = 240, B = 199. The two bottom rows are the open limit.", bottom=.05)
+
+
+def figure_new_power():
+    cell = new_method_cells()
+    boot = serial_csv("ar_bootstrap_study_summary.csv")
+    fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.3), gridspec_kw={"width_ratios": [1, 1.15, 1.15]})
+    ax = axes[0]
+    strengths = [.25, .5, .75, 1.0]
+    keys = ["alt_load_ar06_s025", "alt_load_ar06", "alt_load_ar06_s075", "alt_load_ar06_s1"]
+    for ds, color in [("JKV17", NAVY), ("Treasury8", CORAL)]:
+        ax.plot(strengths, [cell[(ds, k)] for k in keys], marker="o", lw=2.2, color=color, label=ds)
+    ax.axhline(5, color=GREY, ls="--", lw=1)
+    ax.set(xticks=strengths, xlabel="Loading-shift strength", ylabel="Rejection rate at 5% (%)",
+           ylim=(0, 100), title="Sieve-AR GLS-J power, AR(0.6) noise")
+    ax.legend(fontsize=8)
+    noises = [("Independent", "null_iid", "alt_loading_iid", "null_iid", "alt_load_iid"),
+              ("AR(0.3)", "null_ar03", "alt_loading_ar03", "null_ar03", "alt_load_ar03"),
+              ("AR(0.6)", "null_ar06", "alt_loading_ar06", "null_ar06", "alt_load_ar06")]
+    methods = [("Original test", "#b8c2d0"), ("+ AR(1) bootstrap", GOLD), ("Sieve-AR GLS-J", TEAL)]
+    for bx, ds in zip(axes[1:], ("JKV17", "Treasury8")):
+        g = lambda sc, m: 100 * float(boot[(boot.dataset == ds) & (boot.scenario == sc) & (boot.method == m)].rejection_rate.iloc[0])
+        x = np.arange(3)
+        for j, (lab, color) in enumerate(methods):
+            sizes, powers = [], []
+            for _, n0, a0, n1, a1 in noises:
+                if j == 0: sz, pw = g(n0, "paper_iid"), g(a0, "paper_iid")
+                elif j == 1: sz, pw = g(n0, "ar1_global"), g(a0, "ar1_global")
+                else: sz, pw = cell[(ds, n1)], cell[(ds, a1)]
+                sizes.append(sz); powers.append(pw)
+            xs = x + (j - 1) * .27
+            bars = bx.bar(xs, powers, .27, color=color, label=lab)
+            for xi, pw, sz, bar in zip(xs, powers, sizes, bars):
+                bad = sz > 10
+                if bad: bar.set_hatch("//"); bar.set_edgecolor(CORAL)
+                bx.text(xi, pw + 2, f"{sz:.1f}" if sz < 10 else f"{sz:.0f}", ha="center", fontsize=7.5,
+                        color=CORAL if bad else GREY, fontweight="bold" if bad else "normal")
+        bx.set(xticks=x, xticklabels=[n[0] for n in noises], ylim=(0, 112), ylabel="Power, half-strength loading shift (%)",
+               title=f"{ds}: power (size % above bars)")
+        bx.legend(fontsize=7.5, loc="upper left")
+    save(fig, "10_sieve_gls_power.png", "Hatched coral bars: size above 10%, so that power is mostly false alarms. Sources: simulation_all_runs_summary.csv (250 panels), ar_bootstrap_study_summary.csv (200 panels).", bottom=.06)
+
+
+def figure_empirical():
+    froz = serial_csv("empirical_frozen_pmax6.csv")
+    pub = serial_csv("empirical_treasury8_public.csv")
+    pub = pub[pub.pmax == 6]
+    samples = [("JKV17 1970-1989", froz), ("JKV17 1990-2009", froz), ("JKV17 1970-2009", froz),
+               ("Treasury8 1990-2009", pub), ("Treasury8 1990-2026", pub), ("Treasury8 2010-2026", pub)]
+    fig, ax = plt.subplots(figsize=(9.5, 4))
+    x = np.arange(len(samples))
+    for j, (r, color) in enumerate([(3, NAVY), (4, TEAL)]):
+        v = [float(d[(d["sample"] == s) & (d["rank"] == r)].p_value.iloc[0]) for s, d in samples]
+        ax.bar(x + (j - .5) * .36, v, .36, color=color, label=f"r = {r}")
+        for xi, vi in zip(x + (j - .5) * .36, v):
+            ax.text(xi, vi + .006, f"{vi:.3f}", ha="center", fontsize=7.5, color=color)
+    ax.axhline(.05, color=CORAL, ls="--", lw=1.1, label="5% level")
+    ax.set(xticks=x, xticklabels=[s.replace(" ", "\n", 1) for s, _ in samples], ylim=(0, .4), ylabel="Bootstrap p-value (B = 999)",
+           title="Exploratory sieve-AR GLS-J p-values (not pre-registered)")
+    ax.legend(fontsize=8)
+    save(fig, "11_empirical_pvalues.png", "JKV: frozen run on the licensed panel (not redistributed). Treasury: rerun on the committed H.15 file through August 2026. 2010–2026 sits in the open-limit case.", bottom=.07)
+
+
 def benchmark(args):
     model, _ = sim.load_model(args.dataset)
     common = dict(generator="w9", T=args.T, tau=args.tau, dataset=args.dataset, model=model, resid_rho=args.rho)
@@ -182,12 +326,36 @@ def synthetic(args):
     print(path)
 
 
+def serial_benchmark(args):
+    import serial_robust as sr
+    rows = sr.run_serial_cells(args.datasets.split(","), args.scenarios.split(","), args.reps, args.bootstrap, args.jobs)
+    for r in rows:
+        print(f"{r['dataset']:9s} {r['scenario']:22s} reject={r['reject_pct']:5.1f}% (MC s.e. {r['mc_se_pts']:.1f}) n={r['reps']}")
+
+
+def serial_empirical(args):
+    import serial_robust as sr
+    for name, d in sr.treasury8_samples().items():
+        for r in (3, 4):
+            o = sr.empirical_test(d[sr.CMT8].to_numpy(float), r, boot=args.bootstrap, pmax=args.pmax)
+            print(f"{name} T={len(d)} r={r} AR order={o['p_ar']} stat={o['stat']:.5f} p={o['p']:.3f}")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="command", required=True)
     b = sub.add_parser("benchmark", help="Run new Monte Carlo size and power cells")
     d = sub.add_parser("synthetic-data", help="Write a clearly labeled synthetic example panel")
     sub.add_parser("figures", help="Rebuild figures from committed data and frozen tables")
+    sb = sub.add_parser("serial-benchmark", help="Size/power of the sieve-AR GLS-J test on serial-error DGPs")
+    sb.add_argument("--datasets", default="JKV17,Treasury8")
+    sb.add_argument("--scenarios", default="null_iid,null_ar06,alt_load_ar06")
+    sb.add_argument("--reps", type=int, default=10)
+    sb.add_argument("--bootstrap", type=int, default=199)
+    sb.add_argument("--jobs", type=int, default=1)
+    se = sub.add_parser("serial-empirical", help="Sieve-AR GLS-J on the committed Treasury CMT panel")
+    se.add_argument("--bootstrap", type=int, default=999)
+    se.add_argument("--pmax", type=int, default=6)
     for q in (b, d):
         q.add_argument("--dataset", choices=["jkv", "treasury_cmt"], default="jkv")
         q.add_argument("--T", type=int, default=480)
@@ -202,7 +370,14 @@ def main():
     d.add_argument("--seed", type=int, default=100000)
     args = p.parse_args()
     if args.command == "figures":
-        for fn in [figure_yields, figure_design, figure_fullsample, figure_bandwidth, figure_ar, figure_dating]: fn()
+        for fn in [figure_yields, figure_design, figure_fullsample, figure_bandwidth, figure_ar, figure_dating,
+                   figure_persistence, figure_suwang_dgp, figure_new_size, figure_new_power, figure_empirical]: fn()
+    elif args.command == "serial-benchmark":
+        if args.reps < 1 or args.bootstrap < 1 or args.jobs < 1:
+            p.error("Require positive reps/bootstrap/jobs")
+        serial_benchmark(args)
+    elif args.command == "serial-empirical":
+        serial_empirical(args)
     else:
         if args.T < 40 or not 1 <= args.tau < args.T or not 0 <= args.rho < 1 or args.strength < 0:
             p.error("Require T >= 40, 1 <= tau < T, 0 <= rho < 1, and strength >= 0")

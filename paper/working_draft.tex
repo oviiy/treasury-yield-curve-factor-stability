@@ -26,7 +26,7 @@
 \end{center}
 
 \begin{abstract}
-Almost every factor model of the yield curve---Nelson--Siegel, Svensson, their dynamic and arbitrage-free versions, and principal-component models---maps a few factors to maturities through a loading matrix that does not change over time. We ask whether this restriction is supported by the data. Using the nonparametric test of \citet{SuWang2017}, which compares a global principal-component fit with a kernel-local one, we test constant loadings in two monthly U.S.\ Treasury panels: the CRSP unsmoothed Fama--Bliss zero-coupon yields of \citet{JKV2014} (1970--2009, 17 maturities) and the official Treasury constant-maturity par curve (1981--2026, 8 maturities). The Treasury panel rejects constant loadings with three, four and five factors; the Fama--Bliss panel rejects with three factors, and with four in every sample starting between 1977 and 1986. Monte Carlo experiments at our sample sizes, including fake curves calibrated to both panels, show that with serially independent errors the test's size is close to or below nominal at the 1\%, 5\% and 10\% levels and its power against a change in the factor structure is close to one. The empirical residuals, however, are serially correlated (lag-one autocorrelation around 0.6), and in simulations SW's bootstrap rejects constant loadings in every replication once the errors have an autocorrelation of 0.3 or more; the empirical rejections therefore cannot yet be read as evidence of changing loadings. As a secondary extension beyond SW's procedure, we also ask how well a change can be dated: a sequential scan dates a planted change about 20 months late, while testing once and dating by least squares is more accurate.
+Almost every factor model of the yield curve---Nelson--Siegel, Svensson, their dynamic and arbitrage-free versions, and principal-component models---maps a few factors to maturities through a loading matrix that does not change over time. We ask whether this restriction is supported by the data. Using the nonparametric test of \citet{SuWang2017}, which compares a global principal-component fit with a kernel-local one, we test constant loadings in two monthly U.S.\ Treasury panels: the CRSP unsmoothed Fama--Bliss zero-coupon yields of \citet{JKV2014} (1970--2009, 17 maturities) and the official Treasury constant-maturity par curve (1981--2026, 8 maturities). The Treasury panel rejects constant loadings with three, four and five factors; the Fama--Bliss panel rejects with three factors, and with four in every sample starting between 1977 and 1986. Monte Carlo experiments at our sample sizes, including fake curves calibrated to both panels, show that with serially independent errors the test's size is close to or below nominal at the 1\%, 5\% and 10\% levels and its power against a change in the factor structure is close to one. The empirical residuals, however, are serially correlated (lag-one autocorrelation around 0.6), and in simulations SW's bootstrap rejects constant loadings in every replication once the errors have an autocorrelation of 0.3 or more; the empirical rejections therefore cannot yet be read as evidence of changing loadings. We propose a version of the test that whitens the errors with a sieve autoregression before comparing local and global loadings and calibrates the comparison with a bootstrap that reproduces the persistence. In simulations its size lies between 0.8\% and 7.6\% in 27 of 32 null designs, including AR, ARMA and measurement-error dynamics, with more power than an AR bootstrap of the original statistic; it over-rejects (8--15\%) only when error volatility changes by different proportions across maturities, a case that is not identified from yields alone. Exploratory applications reject constant three-factor loadings but not constant four-factor loadings over 1990--2009. As a secondary extension beyond SW's procedure, we also ask how well a change can be dated: a sequential scan dates a planted change about 20 months late, while testing once and dating by least squares is more accurate.
 \end{abstract}
 
 \noindent\textbf{Keywords:} yield curve; factor model; time-varying factor loadings; local principal components; specification test; structural change.
@@ -53,7 +53,7 @@ A natural follow-up question is \emph{when} the loadings change. We apply the te
 
 \paragraph{Three questions.} It helps to separate three questions that the paper answers with different tools. (1) \emph{Is the constant-loading model adequate?} This is what SW's full-sample test answers; a rejection says that a constant $d$-factor model with serially independent errors does not fit, not where or why. (2) \emph{If it is not, when did the structure change?} This is a dating problem, for which the test itself gives no answer. SW do not address it---their simulations report only rejection rates, and leave the estimation of break points to future work---so we treat it as a secondary extension and consider a sequential scan and a ``test, then split'' procedure. (3) \emph{How far can the answers to (1) and (2) be trusted?} This is answered by simulation: on fake curves for which the truth is known (no change, or a change from three to four factors at a known month), we measure the false-alarm rate (size) and the detection rate (power) of the test, as SW do, and, for the extension, the dating error. Simulation calibrates the instruments; it does not show that the real data contain a break. Its conclusions carry over to the data only to the extent that the fake curves resemble them, which is why we also simulate serially correlated errors.
 
-Section~\ref{sec.test} describes the test and its implementation. Section~\ref{sec.data} describes the data. Section~\ref{sec.mc} reports Monte Carlo evidence at our sample sizes. Section~\ref{sec.results} reports the full-sample results and their robustness. Section~\ref{sec.scan} compares two dating procedures and reports the sequential scan on the data. Section~\ref{sec.discussion} discusses interpretation and limitations, and Section~\ref{sec.conclusion} concludes.
+Section~\ref{sec.test} describes the test and its implementation. Section~\ref{sec.data} describes the data. Section~\ref{sec.mc} reports Monte Carlo evidence at our sample sizes. Section~\ref{sec.results} reports the full-sample results and their robustness. Section~\ref{sec.scan} compares two dating procedures and reports the sequential scan on the data. Section~\ref{sec.robust} diagnoses the failure under serial correlation and proposes a serial-correlation-robust version of the test. Section~\ref{sec.discussion} discusses interpretation and limitations, and Section~\ref{sec.conclusion} concludes.
 
 \section{The model and the specification test}\label{sec.test}
 
@@ -366,7 +366,7 @@ $c$ & 1\% & 5\% & 10\% & 1\% & 5\% & 10\%\\
 
 Removing three principal components from the Fama--Bliss panel leaves residuals with a median lag-one autocorrelation of 0.63 (0.36--0.79 across maturities). We therefore replace the i.i.d.\ noise of the benchmark by AR(1) noise with coefficient $\rho$, keeping its marginal variance. Table~\ref{tab.ar} reports the full-sample test at 5\% (the gate of the ``test, then split'' procedure of Section~\ref{sec.scan}, so its size is the test's size). With SW's bootstrap the size is 3\% at $\rho=0$ and 100\% at $\rho\ge 0.3$. Persistent noise inflates the gap between the local and the global fit by roughly $(1+\rho)/(1-\rho)$; at $\rho=0.5$ the statistic rises from 0.5--1 to 8--9, against a 5\% critical value of about 2. The sequential scan of Section~\ref{sec.scan} is affected in the same way: at $\rho=0.5$ it reports a break in every null panel, 3.7 on average.
 
-As \emph{our addition} we tried an AR(1)-sieve version of the bootstrap that draws AR(1) noise with each maturity's estimated coefficient. When the coefficient is estimated from the residual of the constant-loading fit, the size is controlled (1--4\%) but power collapses as $\rho$ grows, partly because under the alternative that residual contains the omitted fourth factor and its autocorrelation is overstated. When it is estimated from the residual of the local fit, power recovers but the size is 7.5--24.5\%, because the local fit absorbs part of the noise. Neither version is satisfactory, and we leave the choice of bootstrap (AR sieve, block or other) open.
+As \emph{our addition} we tried an AR(1)-sieve version of the bootstrap that draws AR(1) noise with each maturity's estimated coefficient. When the coefficient is estimated from the residual of the constant-loading fit, the size is controlled (1--4\%) but power collapses as $\rho$ grows, partly because under the alternative that residual contains the omitted fourth factor and its autocorrelation is overstated. When it is estimated from the residual of the local fit, power recovers but the size is 7.5--24.5\%, because the local fit absorbs part of the noise. Neither version is satisfactory. Section~\ref{sec.robust} returns to this problem and changes the statistic as well as the bootstrap.
 
 \begin{table}[htbp]
 \centering
@@ -647,11 +647,144 @@ Table~\ref{tab.split} reports the final-seed results. The size is that of the te
 
 With these caveats, the dates are best read as episodes rather than months. Pooling the $d=4$ breaks found under three per-window bandwidth rules (the rule of thumb, and $0.5\times$ and $1.5\times$ it) in both panels, they cluster in five episodes: 1981--84 (JKV 1981-08, 1983-04, 1984-12; the peak of the federal funds rate in mid-1981 and the end of monetary targeting in late 1982); 1991--94 (Treasury 1991-09, 1992-06, 1993-06; JKV 1993-09, 1994-05; rate cuts after the 1990--91 recession, then the surprise tightening from February 1994); 2004--06 (Treasury 2004-03; JKV 2004-07, 2004-12, 2006-10; the tightening from 1\% to 5.25\% with little response of long yields); 2008 (Treasury 2008-09 under $0.5\times$ and $1.5\times$; the policy rate reaching zero); and 2019--21 (Treasury 2019-11, 2021-02, 2021-06; rate cuts, the pandemic, and the return of inflation). Many of these dates lie near turns in Federal Reserve policy, but the sample contains many such turns and we do not test the association formally. Given the delays in Table~\ref{tab.scansim}, each change probably began before the date at which the scan records it, and given the weak detection at $d=4$, the absence of a break in a period is not evidence of stability.
 
+\section{A test robust to serially correlated errors}\label{sec.robust}
+
+Sections~\ref{sec.ar} and \ref{sec.discussion} identify serial correlation as the main threat to the empirical rejections. This section, written after the earlier analysis, diagnoses the failure more closely and proposes a version of the test that keeps SW's null hypothesis and their local-versus-global comparison but remains valid with persistent errors. All results here are Monte Carlo or exploratory empirical evidence; we have no asymptotic theory for the new procedure yet.
+
+\subsection{Why the original test fails}\label{sec.robust.why}
+
+\paragraph{The failure is the method's, not the data's.} We first checked that our implementation is SW's test: on the same input matrices, the two statistics computed by the authors' MATLAB routine (run in Octave) agree with our port to twelve significant digits. A by-product of this check is that the bias and variance estimators $\hat B_{NT}$ and $\hat V_{1NT}$ multiply local factors estimated at different dates, so they depend on the arbitrary sign (and rotation) of the local eigenvectors; on one JKV matrix $\hat J_{NT}$ is 60.9 with raw eigenvector signs and 71.3 with a first-row-positive convention. We recommend aligning local loadings to the global ones (Procrustes) and fix the first-row convention throughout. We then added AR errors to SW's own DGP~1 ($N=T=100$, two factors). Figure~\ref{fig.swdgp} shows that SW's test, which has size 2\% with independent errors, rejects 88\% of null panels with AR(0.3) errors and 100\% with AR(0.6). The same holds for the statistics in the authors' code. Over-rejection under persistence is therefore a property of the procedure, not of yield data or of our code.
+
+\begin{figure}[htbp]
+\centering\includegraphics[width=0.85\linewidth]{../figures/08_suwang_dgp_serial.png}
+\caption{SW's DGP~1 with AR errors: rejection frequencies under constant loadings (200 panels, $B=199$, 5\% level). The AR(1)-filtered GLS statistic of Section~\ref{sec.robust.method} is shown for comparison; at $T=100$ its size is 8--10\%.}\label{fig.swdgp}
+\end{figure}
+
+\paragraph{Narrowing the bandwidth does not help.} When residuals of a factor model with a fixed number of factors remain serially correlated, a natural response is to narrow the bandwidth, so that the local fit follows the data more closely. Figure~\ref{fig.bwpersist} (left) confirms that narrower bandwidths reduce the lag-one autocorrelation of the local residuals in both panels (JKV: from 0.63 for constant loadings to 0.22 at $h=0.25h_0$), but never remove it. The right panel shows the cost: in calibrated simulations with AR(0.3) errors and constant loadings, SW's test rejects 62.5\% of panels at $2h_0$ and 98.5\% at $0.5h_0$ (JKV). A narrow kernel lets the local loadings absorb persistent noise, which the statistic then reads as time variation. Selecting $h$ by blocked cross-validation inside an AR(1) bootstrap restores size (1--4\%) but leaves power at 12--13\% against a half-strength change.
+
+\begin{figure}[htbp]
+\centering\includegraphics[width=\linewidth]{../figures/07_bandwidth_persistence.png}
+\caption{Left: median lag-one autocorrelation of residuals in the real panels, rank 3, as a function of the bandwidth multiplier $c$ ($h=c h_0$); dotted lines are the constant-loading fits. Right: rejection rates of SW's test under constant loadings in calibrated simulations ($T=240$, 200 panels).}\label{fig.bwpersist}
+\end{figure}
+
+\paragraph{AR-aware bootstraps trade power for size.} Section~\ref{sec.ar} showed that an AR(1) bootstrap for SW's statistic either controls size and loses power, or the reverse. In the fixed-rank loading-shift design used below, the AR(1) bootstrap based on constant-loading residuals has size 1.0--4.5\% but power of only 7.5\% (JKV) and 23\% (Treasury) against a half-strength loading change with AR(0.6) errors (Table~\ref{tab.robust.sp}). A dependent wild bootstrap \citep{Shao2010} applied to SW's statistic does not control size (12--50\% under AR(0.6)), because $\hat J_{NT}$ is standardized as if the errors were martingale differences.
+
+\subsection{The sieve-AR GLS-J test}\label{sec.robust.method}
+
+The idea is to make the errors unpredictable before comparing local and global loadings, and to put the persistence back in the bootstrap. Let $\hat F_t$ be the first $d$ principal components of the standardized panel and $\hat e_{it}$ the residuals of the constant-loading fit.
+\begin{enumerate}
+\item \emph{Filter.} Choose one autoregressive order $\hat p\le 6$ for all maturities by minimizing the pooled criterion $\sum_i\log\hat\sigma^2_{u,i}(p)+2Np/T_p$ (AIC), fit $\hat e_{it}=\sum_{j=1}^{\hat p}\phi_{ij}\hat e_{i,t-j}+u_{it}$ maturity by maturity, and quasi-difference yields and factors, $\tilde x_{it}=x_{it}-\sum_j\hat\phi_{ij}x_{i,t-j}$ and $\tilde z_{it}=\hat F_t-\sum_j\hat\phi_{ij}\hat F_{t-j}$, as in the GLS estimator of \citet{BreitungTenhofen2011}.
+\item \emph{Compare.} Estimate full-sample loadings $\hat\lambda_i$ by least squares of $\tilde x_{it}$ on $\tilde z_{it}$, and local loadings $\hat\lambda_i(t)$ by kernel-weighted least squares with SW's boundary kernel and bandwidth $h=2h_0$, fixed in advance. The statistic is the regression form of SW's comparison \citep{SuWang2020},
+\[
+\hat M_{GLS}=\frac{1}{NT}\sum_{i=1}^N\sum_{t}\frac{\big[(\hat\lambda_i(t)-\hat\lambda_i)'\tilde z_{it}\big]^2}{\hat\sigma^2_{u,i}},
+\]
+with $\hat\sigma^2_{u,i}$ the variance of the filtered residual of maturity $i$.
+\item \emph{Calibrate.} Draw $u^*_{it}=\hat u_{it}\eta_t$ with one Rademacher sign $\eta_t$ per month shared by all maturities (which keeps the cross-maturity correlation), rebuild $e^*_{it}$ through the fitted AR($\hat p$) recursion, form $x^*_{it}$ as the fitted common component plus $e^*_{it}$, and recompute $\hat M_{GLS}$ after re-estimating factors, AR coefficients and loadings, with $\hat p$ held fixed. The $p$-value is the add-one share of $B$ draws at or above the observed statistic. This is a sieve bootstrap in the sense of \citet{Kreiss1992} and \citet{Buhlmann1997}.
+\end{enumerate}
+The null hypothesis, the kernel and the local-versus-global comparison are SW's; what is new is that the noise is whitened first, the AR order is chosen from the data, and the bootstrap carries the dynamics. The statistic is not centred or studentized and relies on the bootstrap for its null distribution. The released implementation (\texttt{code/serial\_robust.py}) reproduces the exploratory code on which the simulations were run, panel by panel: on 40 test panels the $p$-values, decisions, numbers of bootstrap draws and AR orders are identical.
+
+\subsection{Size and power}\label{sec.robust.mc}
+
+The simulations use $T=240$ months, Nelson--Siegel calibrations to JKV (17 maturities, 1970--2009) and to the eight-maturity Treasury curve (1990--2009), 250 panels per cell and $B=199$. Unlike the benchmark of Section~\ref{sec.bench}, the main alternative keeps three factors and shifts the loadings at mid-sample: from $T/2$ the third factor also loads on the fourth Svensson shape, scaled to a share (``strength'') of the calibrated fourth-factor scale. Table~\ref{tab.robust.sp} compares the new test with SW's test and the AR(1) bootstrap on the same design.
+
+\begin{table}[htbp]
+\centering
+\begin{threeparttable}
+\small
+\caption{Size / power (\%) at 5\%: SW's test, AR(1) bootstrap and sieve-AR GLS-J}\label{tab.robust.sp}
+\begin{tabular}{lcccccc}
+\toprule
+& \multicolumn{2}{c}{SW's test} & \multicolumn{2}{c}{+ AR(1) bootstrap} & \multicolumn{2}{c}{Sieve-AR GLS-J}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Errors & JKV & Treasury & JKV & Treasury & JKV & Treasury\\
+\midrule
+Independent & 3.5 / 44.0 & 3.5 / 72.5 & 3.5 / 39.0 & 3.5 / 68.0 & 2.4 / 49.6 & 1.2 / 76.8\\
+AR(0.3) & 95.0 / 99.5 & 62.5 / 97.0 & 3.0 / 18.0 & 4.5 / 35.0 & 1.6 / 26.4 & 1.2 / 55.2\\
+AR(0.6) & 100 / 100 & 100 / 100 & 1.0 / 7.5 & 1.5 / 23.0 & 2.4 / 20.8 & 2.0 / 44.4\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\small
+\item Notes: size under constant loadings; power against a half-strength loading shift at $T/2$. SW's test and the AR(1) bootstrap: 200 panels; sieve-AR GLS-J: 250 panels. When the size is far above 5\%, the accompanying power is mostly false rejection. Sources: \texttt{results/serial/ar\_bootstrap\_study\_summary.csv} and \texttt{simulation\_all\_runs\_summary.csv}.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+Figure~\ref{fig.robust.size} reports the size of the new test over sixteen error designs: homogeneous AR(1) with coefficients from 0 to 0.9, AR coefficients rising from 0.2 to 0.7 across maturities, AR(2), ARMA(1,1), a persistent AR(0.95) component plus measurement noise, constant cross-maturity correlation, a switch to cross-maturity correlation at mid-sample, a proportional 50\% volatility increase at every maturity, and true rank four tested with $d=4$. In 27 of the 32 cells the size lies between 0.8\% and 7.6\%. The exceptions are JKV with rank four and independent errors (10.4\%), where the fourth factor is weak, and the case discussed in Section~\ref{sec.robust.ident}.
+
+\begin{figure}[htbp]
+\centering\includegraphics[width=0.8\linewidth]{../figures/09_sieve_gls_size.png}
+\caption{Size of sieve-AR GLS-J at 5\% under constant loadings, 16 error designs, two calibrations (250 panels each). The shaded band is the Monte Carlo 95\% interval around 5\%.}\label{fig.robust.size}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering\includegraphics[width=\linewidth]{../figures/10_sieve_gls_power.png}
+\caption{Left: power of sieve-AR GLS-J against loading shifts of increasing strength with AR(0.6) errors. Middle and right: power against a half-strength shift, by method and error design, with the size printed above each bar; hatched bars have size above 10\%.}\label{fig.robust.power}
+\end{figure}
+
+Power increases with the size of the change (Figure~\ref{fig.robust.power}): with AR(0.6) errors it is 5.6, 20.8, 47.2 and 62.8\% (JKV) and 7.6, 44.4, 76.0 and 94.8\% (Treasury) at strengths 0.25, 0.5, 0.75 and 1. It is 63.2/90.8\% for a full-strength shift with ARMA(1,1) errors and 74.0/72.0\% when a fourth factor appears at mid-sample with AR(0.6) errors. Table~\ref{tab.robust.abl} shows why the order is chosen by AIC and the bandwidth doubled: a fixed AR(1) filter fails when the errors are ARMA(1,1) or contain measurement noise, BIC chooses orders that are too short, and $h=2h_0$ raises power with no cost in size. Bias-correcting the AR coefficients, iterating the factor estimates, local variance weights and applying SW's $\hat J_{NT}$ to the quasi-differenced data did not improve on the baseline.
+
+\begin{table}[htbp]
+\centering
+\begin{threeparttable}
+\small
+\caption{Design choices: rejection rates (\%, JKV / Treasury) on the same panels}\label{tab.robust.abl}
+\begin{tabular}{lccc}
+\toprule
+Variant & ARMA(1,1) size & Measurement-noise size & Power, AR(0.6), 0.5\\
+\midrule
+Fixed AR(1) filter, $h_0$ & 73.6 / 47.6 & 100 / 98.0 & 19.2 / 34.0\\
+Sieve, BIC order, $h_0$ & 13.2 / 16.8 & 55.6 / 34.4 & 19.2 / 33.6\\
+Fixed AR(1) filter, $2h_0$ & 40.0 / 23.2 & 99.2 / 83.2 & 20.8 / 44.4\\
+Sieve, AIC order, $2h_0$ (adopted) & 4.0 / 3.6 & 7.6 / 4.8 & 20.8 / 44.4\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\small
+\item Notes: 250 panels, $T=240$, $B=199$. Source: \texttt{results/serial/simulation\_all\_runs\_summary.csv} (methods \texttt{gls\_M\_wild}, \texttt{gls\_sieve}, \texttt{gls\_h2}, \texttt{gls\_aic\_h2}).
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{An identification limit}\label{sec.robust.ident}
+
+Writing $y_t=\Lambda_3f_t+\lambda_4g_t+e_t$ as $y_t=\Lambda_3f_t+e^*_t$ with $e^*_t=\lambda_4g_t+e_t$ shows that, if the error covariance may change arbitrarily, a new common factor and a new common component of the errors are observationally equivalent. Any test must therefore restrict how the errors may change. The new test is robust to two such changes---a proportional change in error volatility at all maturities and a change in cross-maturity correlation (size 2.0--4.8\%)---whereas a conditional Nelson--Siegel shape test that we also considered rejects 93--99\% of panels when only the error volatility rises by half. It is not robust to a volatility change that differs across maturities: when, after mid-sample, the error standard deviation is multiplied by factors rising linearly from 1 at the shortest to 2 at the longest maturity, its size is 14.4--15.2\% (JKV) and 8.4--10.4\% (Treasury). Such a change rotates the estimated factor space, which the statistic reads as a loading change. A $T$-dependent maximum AR order does not change this, and weighting the principal components separately in the two halves makes it worse (21--84\%). We therefore state stable \emph{relative} error volatility within a test window as an assumption. In the 1990--2009 data the ratio of second-half to first-half residual standard deviations is 1.03--1.92 (JKV) and 1.05--1.48 (Treasury), so this assumption is not innocuous.
+
+\subsection{Exploratory empirical results}\label{sec.robust.emp}
+
+Table~\ref{tab.robust.emp} and Figure~\ref{fig.robust.emp} apply the new test to the real panels with $B=999$. These runs were not pre-registered; the specification (samples, order of ranks, maximum AR order, bandwidth) will be fixed before a confirmatory run. Over 1990--2009, constant three-factor loadings are rejected in both panels ($p=0.026$ and 0.005), whereas constant four-factor loadings are not ($p=0.196$ and 0.350). Part of the apparent three-factor loading change may therefore be an omitted fourth factor, in line with the hidden factor of \citet{Duffee2011}. In 1970--1989 the AIC order reaches its upper bound of six, and allowing up to twelve lags moves the three-factor $p$-value from 0.007 to 0.050. The 2010--2026 Treasury sample rejects at both ranks, but it contains the zero-lower-bound years, in which short-maturity volatility nearly vanishes---the case of Section~\ref{sec.robust.ident}---so we do not interpret it.
+
+\begin{table}[htbp]
+\centering
+\begin{threeparttable}
+\small
+\caption{Sieve-AR GLS-J on the real panels (bootstrap $p$-values, $B=999$)}\label{tab.robust.emp}
+\begin{tabular}{lccccc}
+\toprule
+Sample & $T$ & $d=3$ & $d=4$ & $d=3$, $p_{\max}=12$ & $d=4$, $p_{\max}=12$\\
+\midrule
+JKV 1970--1989 & 240 & 0.007 & 0.001 & 0.050 & 0.049\\
+JKV 1990--2009 & 240 & 0.026 & 0.196 & 0.022 & 0.195\\
+JKV 1970--2009 & 480 & 0.001 & 0.001 & 0.001 & 0.001\\
+Treasury 1990--2009 & 240 & 0.005 & 0.350 & 0.005 & 0.350\\
+Treasury 1990--2026 & 440 & 0.003 & 0.108 & 0.002 & 0.108\\
+Treasury 2010--2026 & 200 & 0.001 & 0.001 & 0.001 & 0.001\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\small
+\item Notes: AIC order with maximum 6 unless stated; $h=2h_0$; yields in levels. Treasury: eight maturities from the H.15 file in the repository, through August 2026. The exploratory run that preceded it also used a partial September 2026 observation and gave $p=0.005/0.095$ (1990--2026). JKV results are from the licensed panel, which is not redistributed. Sources: \texttt{results/serial/empirical\_*.csv}.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{figure}[htbp]
+\centering\includegraphics[width=0.85\linewidth]{../figures/11_empirical_pvalues.png}
+\caption{Exploratory sieve-AR GLS-J $p$-values ($B=999$); the dashed line marks 5\%.}\label{fig.robust.emp}
+\end{figure}
+
 \section{Discussion}\label{sec.discussion}
 
 \paragraph{What the rejections establish.} Under SW's assumptions---errors that are martingale differences over time, and the rank-padding argument of Proposition~\ref{prop.rank}, which our simulations support---the Treasury results reject every constant-loading model with up to five factors and the Fama--Bliss results reject constant three-factor models. In SW's normalization, a change in the variance of a factor is a change in the loadings, so a rejection does not distinguish between ``maturities' sensitivities changed'' and ``a factor became more or less important''. The last row of Table~\ref{tab.fakesize} shows that the test detects the latter.
 
-\paragraph{Serial correlation.} The main limitation is serial correlation. SW's asymptotic theory, not only the bootstrap, requires serially uncorrelated errors, while the residuals of the constant-loading fits have lag-one autocorrelations of 0.5--0.7. Persistent errors make the local fit track the noise more closely than independent errors would, which can raise $\hat J_{NT}$ relative to its bootstrap distribution. The empirical rejections must therefore be read conditional on this assumption. An earlier draft argued that the strength of the rejections---$\hat J_{NT}$ exceeds the 99\% critical value by factors of 4 to 21 at $d=3$ (Tables~\ref{tab.full} and \ref{tab.sub})---made it unlikely that serial correlation alone accounts for them. The simulations of Section~\ref{sec.ar} do not support that argument: with AR(1) errors at $\rho=0.5$ the statistic in a null model is about four times the 5\% critical value (the 99\% value is somewhat larger), so ratios of the same order as the lower end of the empirical range can arise from serial correlation alone. The empirical rejections should be revisited once a bootstrap that reproduces serial correlation is settled. One fact that the simulations do not yet explain is that the Fama--Bliss panel does not reject at $d=4$ or $d=5$ ($p=0.34$ and 0.26); the residuals of four- and five-factor fits may be less persistent than those of three-factor fits, which we have not checked.
+\paragraph{Serial correlation.} The main limitation is serial correlation. SW's asymptotic theory, not only the bootstrap, requires serially uncorrelated errors, while the residuals of the constant-loading fits have lag-one autocorrelations of 0.5--0.7. Persistent errors make the local fit track the noise more closely than independent errors would, which can raise $\hat J_{NT}$ relative to its bootstrap distribution. The empirical rejections must therefore be read conditional on this assumption. An earlier draft argued that the strength of the rejections---$\hat J_{NT}$ exceeds the 99\% critical value by factors of 4 to 21 at $d=3$ (Tables~\ref{tab.full} and \ref{tab.sub})---made it unlikely that serial correlation alone accounts for them. The simulations of Section~\ref{sec.ar} do not support that argument: with AR(1) errors at $\rho=0.5$ the statistic in a null model is about four times the 5\% critical value (the 99\% value is somewhat larger), so ratios of the same order as the lower end of the empirical range can arise from serial correlation alone. The empirical rejections should be revisited once a bootstrap that reproduces serial correlation is settled; Section~\ref{sec.robust} takes a first step, and its exploratory results confirm the three-factor rejections over 1990--2009 but not the four-factor ones. One fact that the simulations do not yet explain is that the Fama--Bliss panel does not reject at $d=4$ or $d=5$ ($p=0.34$ and 0.26); the residuals of four- and five-factor fits may be less persistent than those of three-factor fits, which we have not checked.
 
 \paragraph{The zero lower bound.} One economic mechanism for loading changes is visible in the sub-samples. When the policy rate is pinned at zero, short-maturity yields stop responding to the factors that move the rest of the curve, which in a factor model is a change in their loadings. Consistent with this, the Treasury panel does not reject at $d=5$ over 1990--2009 or over 2010--2026 separately, but rejects over 1990--2026 and 1981--2026, the samples that span the onset of the zero lower bound (Table~\ref{tab.sub}). This reading is suggestive rather than tested.
 
@@ -659,11 +792,11 @@ With these caveats, the dates are best read as episodes rather than months. Pool
 
 Applying the test of \citet{SuWang2017} to two U.S.\ Treasury panels, we find evidence that factor models with time-invariant loadings are not adequate for the yield curve. The official Treasury curve rejects constant loadings with three, four and five factors; the Fama--Bliss curve rejects with three factors over 1970--2009 and with four in every sample starting between 1977 and 1986. The exception is consistent with a loss of power caused by the 1970s rather than support for constant loadings. With serially independent errors the test is close to correctly sized and powerful at our sample sizes, but with errors as persistent as the empirical residuals its bootstrap over-rejects badly, so the rejections are not yet conclusive. Dating the changes is a secondary question beyond SW's test; in simulations, testing once and estimating the date by least squares is more accurate than a sequential scan, which dates changes about 20 months late. On the data, the scan suggests that the loadings shift around a few episodes of monetary-policy change, but these dates are approximate and conditional on the serial-correlation issue.
 
-Two limitations deserve emphasis. First, the test's theory and bootstrap assume errors uncorrelated over time, the empirical residuals are autocorrelated, and in simulations this alone produces rejections; a bootstrap that reproduces serial correlation is needed before the rejections can be read as evidence of changing loadings. Second, the break dates depend on the bandwidth rule and the search settings, and wide bandwidths in short windows lie outside the theory of the test. For applied work the implication is that yield-curve models should allow the loadings to change over time, or at least be estimated on samples within which they are stable.
+Two limitations deserve emphasis. First, the test's theory and bootstrap assume errors uncorrelated over time, the empirical residuals are autocorrelated, and in simulations this alone produces rejections; a bootstrap that reproduces serial correlation is needed before the rejections can be read as evidence of changing loadings. The sieve-AR GLS-J test of Section~\ref{sec.robust} keeps its size under a wide range of persistent error designs; on exploratory runs it rejects constant three-factor loadings but not constant four-factor loadings over 1990--2009. It still over-rejects when error volatility changes unevenly across maturities, it has no asymptotic theory yet, and its empirical specification must be fixed before a confirmatory run. Second, the break dates depend on the bandwidth rule and the search settings, and wide bandwidths in short windows lie outside the theory of the test. For applied work the implication is that yield-curve models should allow the loadings to change over time, or at least be estimated on samples within which they are stable.
 
 \section*{Data and code availability}
 
-The Fama--Bliss panel is from the \emph{Journal of Applied Econometrics} data archive entry of \citet{JKV2014}; the underlying data are from the CRSP Monthly Treasury files, on which CRSP retains copyright. Treasury CMT yields are from the Federal Reserve H.15 release and treasury.gov. The Python implementation, simulation code, random seeds and summary results accompany this working draft in the public repository. CRSP source yields are not redistributed.
+The Fama--Bliss panel is from the \emph{Journal of Applied Econometrics} data archive entry of \citet{JKV2014}; the underlying data are from the CRSP Monthly Treasury files, on which CRSP retains copyright. Treasury CMT yields are from the Federal Reserve H.15 release and treasury.gov. The Python implementation, simulation code, random seeds and summary results accompany this working draft in the public repository; the serial-correlation-robust test is in \texttt{code/serial\_robust.py}, its summaries in \texttt{results/serial/}, and the full sequence of analyses in \texttt{notebook/research\_notebook.ipynb}. CRSP source yields are not redistributed.
 
 \appendix
 
@@ -706,20 +839,26 @@ The least-squares split dates best (69, 81 and 81\% within 24 months at strength
 \bibitem[Bai(1997)]{Bai1997}
 Bai, J. (1997). Estimation of a change point in multiple regression models. \emph{Review of Economics and Statistics}, 79(4), 551--563.
 
-\bibitem[Baltagi et al.(2017)]{BKW2017}
-Baltagi, B. H., Kao, C., and Wang, F. (2017). Identification and estimation of a large factor model with structural instability. \emph{Journal of Econometrics}, 197(1), 87--100.
-
 \bibitem[Bai(2003)]{Bai2003}
 Bai, J. (2003). Inferential theory for factor models of large dimensions. \emph{Econometrica} 71, 135--171.
 
 \bibitem[Bai and Ng(2002)]{BaiNg2002}
 Bai, J. and Ng, S. (2002). Determining the number of factors in approximate factor models. \emph{Econometrica} 70, 191--221.
 
+\bibitem[Baltagi et al.(2017)]{BKW2017}
+Baltagi, B. H., Kao, C., and Wang, F. (2017). Identification and estimation of a large factor model with structural instability. \emph{Journal of Econometrics}, 197(1), 87--100.
+
 \bibitem[Bowsher and Meeks(2008)]{BowsherMeeks2008}
 Bowsher, C.~G. and Meeks, R. (2008). The dynamics of economic functions: modeling and forecasting the yield curve. \emph{Journal of the American Statistical Association} 103, 1419--1437.
 
 \bibitem[Breitung and Eickmeier(2011)]{BreitungEickmeier2011}
 Breitung, J. and Eickmeier, S. (2011). Testing for structural breaks in dynamic factor models. \emph{Journal of Econometrics} 163, 71--84.
+
+\bibitem[Breitung and Tenhofen(2011)]{BreitungTenhofen2011}
+Breitung, J. and J.~Tenhofen (2011). GLS estimation of dynamic factor models. \emph{Journal of the American Statistical Association} 106(495), 1150--1166.
+
+\bibitem[B\"uhlmann(1997)]{Buhlmann1997}
+B\"uhlmann, P. (1997). Sieve bootstrap for time series. \emph{Bernoulli} 3(2), 123--148.
 
 \bibitem[Chen et al.(2014)]{CDG2014}
 Chen, L., Dolado, J.~J. and Gonzalo, J. (2014). Detecting big structural breaks in large factor models. \emph{Journal of Econometrics} 180, 30--48.
@@ -729,6 +868,9 @@ Christensen, J.~H.~E., Diebold, F.~X. and Rudebusch, G.~D. (2011). The affine ar
 
 \bibitem[Diebold and Li(2006)]{DieboldLi2006}
 Diebold, F.~X. and Li, C. (2006). Forecasting the term structure of government bond yields. \emph{Journal of Econometrics} 130, 337--364.
+
+\bibitem[Duffee(2011)]{Duffee2011}
+Duffee, G.~R. (2011). Information in (and not in) the term structure. \emph{Review of Financial Studies} 24(9), 2895--2934.
 
 \bibitem[Fama and Bliss(1987)]{FamaBliss1987}
 Fama, E.~F. and Bliss, R.~R. (1987). The information in long-maturity forward rates. \emph{American Economic Review} 77, 680--692.
@@ -751,6 +893,9 @@ Jungbacker, B., Koopman, S.~J. and van der Wel, M. (2014). Smooth dynamic factor
 \bibitem[Koopman et al.(2010)]{KMV2010}
 Koopman, S.~J., Mallee, M.~I.~P. and van der Wel, M. (2010). Analyzing the term structure of interest rates using the dynamic Nelson--Siegel model with time-varying parameters. \emph{Journal of Business \& Economic Statistics} 28, 329--343.
 
+\bibitem[Kreiss(1992)]{Kreiss1992}
+Kreiss, J.-P. (1992). Bootstrap procedures for AR($\infty$)-processes. In K.-H. J\"ockel, G.~Rothe and W.~Sendler (eds.), \emph{Bootstrapping and Related Techniques}, Lecture Notes in Economics and Mathematical Systems 376, 107--113. Berlin: Springer.
+
 \bibitem[Li and Racine(2007)]{LiRacine2007}
 Li, Q. and Racine, J.~S. (2007). \emph{Nonparametric Econometrics: Theory and Practice}. Princeton University Press.
 
@@ -760,8 +905,14 @@ Litterman, R. and Scheinkman, J. (1991). Common factors affecting bond returns. 
 \bibitem[Nelson and Siegel(1987)]{NelsonSiegel1987}
 Nelson, C.~R. and Siegel, A.~F. (1987). Parsimonious modeling of yield curves. \emph{Journal of Business} 60, 473--489.
 
+\bibitem[Shao(2010)]{Shao2010}
+Shao, X. (2010). The dependent wild bootstrap. \emph{Journal of the American Statistical Association} 105(489), 218--235.
+
 \bibitem[Su and Wang(2017)]{SuWang2017}
 Su, L. and Wang, X. (2017). On time-varying factor models: estimation and testing. \emph{Journal of Econometrics} 198, 84--101.
+
+\bibitem[Su and Wang(2020)]{SuWang2020}
+Su, L. and X.~Wang (2020). Testing for structural changes in factor models via a nonparametric regression. \emph{Econometric Theory} 36(6), 1127--1158.
 
 \bibitem[Svensson(1994)]{Svensson1994}
 Svensson, L.~E.~O. (1994). Estimating and interpreting forward interest rates: Sweden 1992--1994. NBER Working Paper 4871.
