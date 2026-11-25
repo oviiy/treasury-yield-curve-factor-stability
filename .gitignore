@@ -11,3 +11,4 @@ results/cells/
 paper/*.aux
 paper/*.log
 paper/*.synctex.gz
+paper/*.out
