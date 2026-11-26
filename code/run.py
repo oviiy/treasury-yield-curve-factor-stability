@@ -328,7 +328,8 @@ def synthetic(args):
 
 def serial_benchmark(args):
     import serial_robust as sr
-    rows = sr.run_serial_cells(args.datasets.split(","), args.scenarios.split(","), args.reps, args.bootstrap, args.jobs)
+    rows = sr.run_serial_cells(args.datasets.split(","), args.scenarios.split(","), args.reps, args.bootstrap, args.jobs,
+                                **({"method": "bt"} if args.method == "bt" else {}))
     for r in rows:
         print(f"{r['dataset']:9s} {r['scenario']:22s} reject={r['reject_pct']:5.1f}% (MC s.e. {r['mc_se_pts']:.1f}) n={r['reps']}")
 
@@ -337,8 +338,9 @@ def serial_empirical(args):
     import serial_robust as sr
     for name, d in sr.treasury8_samples().items():
         for r in (3, 4):
-            o = sr.empirical_test(d[sr.CMT8].to_numpy(float), r, boot=args.bootstrap, pmax=args.pmax)
-            print(f"{name} T={len(d)} r={r} AR order={o['p_ar']} stat={o['stat']:.5f} p={o['p']:.3f}")
+            o = sr.empirical_test(d[sr.CMT8].to_numpy(float), r, boot=args.bootstrap, pmax=args.pmax, method=args.method)
+            extra = f" asymptotic p={o['p_asy']:.4f}" if "p_asy" in o else ""
+            print(f"{name} T={len(d)} r={r} AR order={o['p_ar']} stat={o['stat']:.5f} p={o['p']:.3f}{extra}")
 
 
 def main():
@@ -353,9 +355,11 @@ def main():
     sb.add_argument("--reps", type=int, default=10)
     sb.add_argument("--bootstrap", type=int, default=199)
     sb.add_argument("--jobs", type=int, default=1)
+    sb.add_argument("--method", choices=["sieve", "bt"], default="sieve", help="sieve-AR GLS-J or BT-GLS J")
     se = sub.add_parser("serial-empirical", help="Sieve-AR GLS-J on the committed Treasury CMT panel")
     se.add_argument("--bootstrap", type=int, default=999)
     se.add_argument("--pmax", type=int, default=6)
+    se.add_argument("--method", choices=["sieve", "bt"], default="sieve", help="sieve-AR GLS-J or BT-GLS J")
     for q in (b, d):
         q.add_argument("--dataset", choices=["jkv", "treasury_cmt"], default="jkv")
         q.add_argument("--T", type=int, default=480)

@@ -150,6 +150,97 @@ def gls_j_test(x, rank, boot=199, seed=0, p="aic", pmax=6, hmult=2.0, early=True
             "h": float(h0 * hmult)}
 
 
+# ------------------------------------------------------------------ BT-GLS J (wk13, 2026-11-26)
+# Breitung and Tenhofen (2011) two-step GLS inside the Su–Wang test. gls_j_test above uses the BT
+# *loading* step (AR(p) quasi-differencing) with PC factors and an uncentred M_GLS. bt_gls_j_test adds
+#   (a) the BT factor step: F_t from the cross-section regression of x_it - sum_j c_ij e_i,t-j on
+#       lambda_i with weights 1/omega_i^2 (innovation variance), after GLS loadings; and
+#   (b) Su–Wang centring/standardisation: d_it = sum_s C^i_ts u_is with
+#       C^i_ts = z_it'(A_it^-1 k_st - A_i^-1) z_is, M = sum_{s,r} D_sr, D_sr = sum_i W^i_sr v_is v_ir,
+#       W^i = C^i'C^i, v = u/omega; J = (M - tr D) / sqrt(2 sum_{s!=r} D_sr^2), N(0,1) one-sided.
+# Calibration is the same wild sieve bootstrap. The asymptotic N(0,1) p-value is reported but
+# over-rejects at N = 8/17 under ARMA/measurement-error nulls; use the bootstrap p-value.
+def bt_factors(x, rank, p, iters=1):
+    """PC start, then BT GLS rounds: AR(p) per maturity, GLS loadings, weighted GLS factors."""
+    t, n = x.shape
+    f, lam = pca_factors(x, rank)
+    for _ in range(iters):
+        coef = ar_fit(x - f @ lam.T, p)
+        xt = quasi_diff(x, coef)
+        z = quasi_diff(np.repeat(f[:, None, :], n, axis=1), coef)
+        lam = np.linalg.solve(np.einsum("tir,tiq->irq", z, z),
+                              np.einsum("tir,ti->ir", z, xt)[..., None])[..., 0]
+        e = x - f @ lam.T
+        w = lam / np.var(quasi_diff(e, coef), axis=0)[:, None]
+        ystar = x.copy()
+        for j in range(p):
+            ystar[p:] -= coef[:, j] * e[p - j - 1:t - j - 1]
+        f = ystar @ np.linalg.solve(lam.T @ w, w.T).T
+        f = f - f.mean(0)
+    return f
+
+
+def bt_statistic(x, f, coef, k):
+    """Centred and standardised GLS form of the Su–Wang statistic for given factors and AR coefficients."""
+    n = x.shape[1]
+    xt = quasi_diff(x, coef)
+    z = quasi_diff(np.repeat(f[:, None, :], n, axis=1), coef)
+    zz = np.einsum("tir,tiq->tirq", z, z)
+    A = zz.sum(0)
+    lam_g = np.linalg.solve(A, np.einsum("tir,ti->ir", z, xt)[..., None])[..., 0]
+    u = xt - np.einsum("tir,ir->ti", z, lam_g)
+    P = np.linalg.solve(np.einsum("st,sirq->tirq", k, zz), z[..., None])[..., 0]
+    Q = np.linalg.solve(A[None], z[..., None])[..., 0]
+    C = np.einsum("tir,sir->its", P, z) * k.T[None] - np.einsum("tir,sir->its", Q, z)
+    Cv = C * (u / np.sqrt(np.mean(u ** 2, 0))).T[:, None, :]
+    m = float(np.sum(Cv.sum(2) ** 2))
+    M2 = Cv.reshape(-1, Cv.shape[2])
+    D = M2.T @ M2
+    bias = float(np.trace(D))
+    np.fill_diagonal(D, 0.)
+    return {"J": (m - bias) / np.sqrt(2. * float(np.sum(D ** 2))), "M": m / u.size, "u": u}
+
+
+def _bt_prepare(x, rank, p, factors, iters):
+    f = pca_factors(x, rank)[0] if factors == "pca" else bt_factors(x, rank, p, iters)
+    lam = np.linalg.lstsq(f, x, rcond=None)[0].T
+    return f, lam, ar_fit(x - f @ lam.T, p)
+
+
+def bt_gls_j_test(x, rank, boot=199, seed=0, p="aic", pmax=6, hmult=2.0, factors="bt", iters=1, early=True):
+    """BT-GLS J test. Same AR-order rule, bandwidth and wild sieve bootstrap as gls_j_test.
+    factors="bt": BT GLS factors (recommended); "pca": PC factors (isolates the centring)."""
+    from scipy.stats import norm
+    t, n = x.shape
+    if p in ("aic", "bic"):
+        f0, l0 = pca_factors(x, rank)
+        p = select_ar_order(x - f0 @ l0.T, pmax=pmax, crit=p)
+    h0 = (2.35 / np.sqrt(12)) * (t - p) ** (-.2) * n ** (-.1)
+    _, k, _ = kernel_matrices(t - p, n, h0 * hmult)
+    f, lam, coef = _bt_prepare(x, rank, p, factors, iters)
+    obs = bt_statistic(x, f, coef, k)
+    common = f @ lam.T
+    e0 = (x - common)[:p]
+    u = obs["u"] - obs["u"].mean(0)
+    rng = np.random.default_rng(seed)
+    exceed = used = 0
+    for _ in range(boot):
+        us = u * rng.choice((-1., 1.), size=t - p)[:, None]
+        es = np.empty((t, n))
+        es[:p] = e0
+        for s in range(p, t):
+            es[s] = us[s - p] + sum(coef[:, j] * es[s - j - 1] for j in range(p))
+        xb = common + es
+        fb, _, cb = _bt_prepare(xb, rank, p, factors, iters)
+        exceed += bt_statistic(xb, fb, cb, k)["J"] >= obs["J"]
+        used += 1
+        if early and (exceed + 1) / (boot + 1) >= ALPHA:
+            break
+    pval = (exceed + 1) / (boot + 1)
+    return {"stat": obs["J"], "p": pval, "p_asy": float(norm.sf(obs["J"])), "reject": pval < ALPHA,
+            "draws": used, "p_ar": int(p), "h": float(h0 * hmult)}
+
+
 # ------------------------------------------------------------------ DGP
 # name: (error spec, alternative or None, strength, volatility after T/2, cross-maturity correlation, true rank)
 SCENARIOS = {
@@ -276,7 +367,9 @@ def _one(args):
     seed = scenario_seed(scenario, rep)
     y, rank = serial_panel(load_serial_model(dataset), scenario, T_SIM, seed)
     t0 = time.time()
-    r = gls_j_test(standardise(y), rank, boot, seed + 13, **kw)
+    kw2 = dict(kw)
+    test = bt_gls_j_test if kw2.pop("method", "sieve") == "bt" else gls_j_test
+    r = test(standardise(y), rank, boot, seed + 13, **kw2)
     return {"dataset": dataset, "scenario": scenario, "rep": rep, "B": boot, "fit_rank": rank,
             "reject": bool(r["reject"]), "p_lb": r["p"], "stat": r["stat"], "draws": r["draws"],
             "p_ar": r["p_ar"], "sec": round(time.time() - t0, 2), **kw}
@@ -324,7 +417,9 @@ def treasury8_samples():
             "Treasury8 1990-2026": df}
 
 
-def empirical_test(y, rank, boot=999, seed=20261122, pmax=6):
-    """Sieve-AR GLS-J on a real (T, N) yield panel in levels; no early stopping, B=999 by default.
-    The PCA is uncentred on the raw yields, as in the exploratory empirical run."""
+def empirical_test(y, rank, boot=999, seed=20261122, pmax=6, method="sieve"):
+    """Sieve-AR GLS-J (method="sieve") or BT-GLS J (method="bt") on a real (T, N) yield panel in levels;
+    no early stopping, B=999 by default. The PCA is uncentred on the raw yields, as in the exploratory run."""
+    if method == "bt":
+        return bt_gls_j_test(np.asarray(y, float), rank, boot, 20261126 + rank, pmax=pmax, early=False)
     return gls_j_test(np.asarray(y, float), rank, boot, seed + rank, p="aic", pmax=pmax, hmult=2.0, early=False)
